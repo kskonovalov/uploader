@@ -4,3 +4,6 @@ konst_uploader_homepage:
 konst_uploader_upload:
     path:     /uploader/upload
     defaults: { _controller: KonstUploaderBundle:Default:upload }
+konst_uploader_show_status:
+    path:     /uploader/status
+    defaults: { _controller: KonstUploaderBundle:Default:showStatus }

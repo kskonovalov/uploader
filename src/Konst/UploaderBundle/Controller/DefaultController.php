@@ -4,6 +4,7 @@ namespace Konst\UploaderBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Konst\UploaderBundle\Form\Type\UserFileType;
 use Konst\UploaderBundle\Entity\UserFile;
 use Konst\UploaderBundle\Entity\FilesOnServers;
@@ -14,12 +15,16 @@ class DefaultController extends Controller
 {
     public function indexAction()
     {
+
         return $this->render('KonstUploaderBundle:Default:index.html.twig');
+
     }
 
-    public function uploadAction(Request $request) {
+    public function uploadAction(Request $request)
+    {
 
         $messages = [];
+        $filesOnServers = [];
         //create entity
         $file = new UserFile();
 
@@ -121,13 +126,18 @@ class DefaultController extends Controller
                     $fileOnServer->setDateUpdated(new \DateTime('now'));
                     $em->persist($fileOnServer);
                     $em->flush();
+                    
+                    $fileIdOnServer = $fileOnServer->getId();
 
                     //send to rabbitmq
                     $msg = array(
                         'savedName' => $file->getSavedName(), 
                         'path' => $file->getFile()->getPath(), 
                         'server' => $server,
-                        'fileOnServerId' => $fileOnServer->getId());
+                        'fileOnServerId' => $fileIdOnServer);
+
+                    $filesOnServers[] = $fileIdOnServer;
+                    
                     $this->get('old_sound_rabbit_mq.upload_file_producer')->publish(serialize($msg));
 
                 }
@@ -143,9 +153,28 @@ class DefaultController extends Controller
         return $this->render('KonstUploaderBundle:Uploader:form.html.twig', array(
             'form' => $form->createView(),
             'messages' => $messages,
+            'filesOnServers' => $filesOnServers,
         ));
     }
     
-    
+    public function showStatusAction (Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $fileStatus = $em->getRepository('KonstUploaderBundle:FilesOnServers')
+        ->find($this->get('request')->request->get('fileId'));
+
+        $result = [];
+
+        $result["server"] = $fileStatus->getServer();
+        $result["status"] = $fileStatus->getStatus();
+
+        $response = new Response();
+        $response->setContent(json_encode($result));
+        $response->setStatusCode(Response::HTTP_OK);
+        $response->headers->set('Content-Type', 'application/json');
+// prints the HTTP headers followed by the content
+        return $response;
+
+    }
 
 }

@@ -106,7 +106,11 @@ old_sound_rabbit_mq:
             queue_options:    {name: 'upload-file'}
             callback:         upload_file_service
 
-
+assetic:
+    debug:          '%kernel.debug%'
+    use_controller: '%kernel.debug%'
+    filters:
+        cssrewrite: ~
 
 konst_uploader:
   parameters:

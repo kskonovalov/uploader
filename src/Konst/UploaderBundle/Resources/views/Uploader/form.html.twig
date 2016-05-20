@@ -1,5 +1,10 @@
 {% extends 'KonstUploaderBundle::base.html.twig' %}
 {% block body %}
+    <div id="uploadStatus">
+        {% for fileOnServer in filesOnServers %}
+            <div class="fileOnServer" id="fileOnServer-{{ fileOnServer }}" data-id="{{ fileOnServer }}"></div>
+        {% endfor %}
+    </div>
     <ul>
         {% for message in messages %}
             <li>{{ message }}</li>

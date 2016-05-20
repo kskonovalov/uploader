@@ -20,6 +20,7 @@ class AppKernel extends Kernel
             new Konst\UploaderBundle\KonstUploaderBundle(),
             new OldSound\RabbitMqBundle\OldSoundRabbitMqBundle(),
             new Oneup\FlysystemBundle\OneupFlysystemBundle(),
+            new Symfony\Bundle\AsseticBundle\AsseticBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'), true)) {

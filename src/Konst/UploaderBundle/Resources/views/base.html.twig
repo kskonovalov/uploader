@@ -22,6 +22,10 @@
         </div>
     </div>
 
-        {% block javascripts %}{% endblock %}
+        {% block javascripts %}
+            {% javascripts '@Konst\UploaderBundle/Resources/public/js/*' %}
+            <script src="{{ asset_url }}"></script>
+            {% endjavascripts %}
+        {% endblock %}
     </body>
 </html>
