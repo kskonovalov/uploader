@@ -37,10 +37,10 @@ class UploadFileConsumer
         else if($server["type"] == "SFTP") {
             $filesystem = new Filesystem(new SftpAdapter([
                 'host' => $server["host"],
-                'port' => 21,
+                'port' => $server["port"],
                 'username' => $server["access"][0],
                 'password' => $server["access"][1],
-                'privateKey' => null,
+//                'privateKey' => null,
                 'root' => $server["path"],
                 'timeout' => 10,
                 'directoryPerm' => 0755
