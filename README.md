@@ -8,6 +8,6 @@ $ ./app/console rabbitmq:consumer upload_file
 
 to reset rabitmq:
 
-$ sudo rabbitmqctl stop_app
-$ sudo rabbitmqctl reset
-$ sudo rabbitmqctl start_app
+<p>$ sudo rabbitmqctl stop_app</p>
+<p>$ sudo rabbitmqctl reset</p>
+<p>$ sudo rabbitmqctl start_app</p>
