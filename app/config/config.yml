@@ -116,7 +116,7 @@ konst_uploader:
       - { format: "wav", max: "999999999" }
       - { format: "avi" }
     servers_list:
-#      - { type: "FTP", host: "demo.wftpserver.com", port: "21", access: "demo-user/demo-user", path: "/upload/" }
-      - { type: "SFTP", host: "demo.wftpserver.com", port: "2222", access: "demo-user/demo-user", path: "/upload/"}
+      - { type: "FTP", host: "demo.wftpserver.com", port: "21", access: "demo-user/demo-user", path: "/upload/" }
+#      - { type: "SFTP", host: "demo.wftpserver.com", port: "2222", access: "demo-user/demo-user", path: "/upload/"}
 #      - { type: "FTP", host: "192.168.0.1", access: "user1/password1", path: "/datastore"}
 #      - { type: "SFTP", host: "192.168.0.10", access: "user2/password2", path: "/"}

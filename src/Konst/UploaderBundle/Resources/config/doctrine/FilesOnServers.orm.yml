@@ -1,0 +1,24 @@
+Konst\UploaderBundle\Entity\FilesOnServers:
+    type: entity
+    table: null
+    repositoryClass: Konst\UploaderBundle\Repository\FilesOnServersRepository
+    id:
+        id:
+            type: integer
+            id: true
+            generator:
+                strategy: AUTO
+    fields:
+        filename:
+            type: string
+            length: 255
+        server:
+            type: string
+            length: '10240'
+        dateUpdated:
+            type: datetime
+            column: date_updated
+        status:
+            type: string
+            length: 255
+    lifecycleCallbacks: {  }

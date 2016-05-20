@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Konst\UploaderBundle\Form\Type\UserFileType;
 use Konst\UploaderBundle\Entity\UserFile;
+use Konst\UploaderBundle\Entity\FilesOnServers;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
 
@@ -108,14 +109,27 @@ class DefaultController extends Controller
 
                 //sending upload task to ftp
                 $serversToUpload = $this->container->getParameter( 'konst_uploader_bundle.servers_list' );
+
                 
                 foreach($serversToUpload as $server) {
+
+                    //insert file upload info
+                    $fileOnServer = new FilesOnServers();
+                    $fileOnServer->setFilename($file->getSavedName());
+                    $fileOnServer->setServer(serialize($server));
+                    $fileOnServer->setStatus("NEW_FILE");
+                    $fileOnServer->setDateUpdated(new \DateTime('now'));
+                    $em->persist($fileOnServer);
+                    $em->flush();
+
                     //send to rabbitmq
                     $msg = array(
                         'savedName' => $file->getSavedName(), 
                         'path' => $file->getFile()->getPath(), 
-                        'server' => $server);
+                        'server' => $server,
+                        'fileOnServerId' => $fileOnServer->getId());
                     $this->get('old_sound_rabbit_mq.upload_file_producer')->publish(serialize($msg));
+
                 }
             }
             else {
@@ -131,5 +145,7 @@ class DefaultController extends Controller
             'messages' => $messages,
         ));
     }
+    
+    
 
 }
