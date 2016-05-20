@@ -8,36 +8,36 @@ $(document).ready(function() {
        $("#uploadStatus").find(".fileOnServer").each(function() {
            var id = $(this).data("id");
            console.log(id);
-           var queue = setInterval(loadStatus(id), 200);
-       });
+           var queue = setInterval(function (){
 
-       function loadStatus(id){
-           $.ajax({
-               url: '/app_dev.php/uploader/status',
-               type: "POST",
-               data: {
-                   fileId: id
-               },
-               success: function(data){
+               $.ajax({
+                   url: '/app_dev.php/uploader/status',
+                   type: "POST",
+                   data: {
+                       fileId: id
+                   },
+                   success: function(data){
 
-                   var server = unserialize(data.server);
+                       var server = unserialize(data.server);
 
-                   var html = "<p><b>STATUS:</b> " + data.status + "; <b>SERVER:</b> " + server.host + "</p>";
+                       var html = "<p><b>STATUS:</b> " + data.status + "; <b>SERVER:</b> " + server.host + "</p>";
 
-                   if(data.status == "NEW_FILE" || data.status == "UPLOADING") {
-                       var percent = (data.status == "NEW_FILE") ? 50 : 100;
-                       html += "<div class=\"progress\">" +
-                           "<div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" style=\"width: " + percent + "%\">" +
-                           "</div></div>";
-                   } else {
+                       if(data.status == "NEW_FILE" || data.status == "UPLOADING") {
+                           var percent = (data.status == "NEW_FILE") ? 50 : 100;
+                           html += "<div class=\"progress\">" +
+                               "<div class=\"progress-bar progress-bar-striped active\" role=\"progressbar\" style=\"width: " + percent + "%\">" +
+                               "</div></div>";
+                       } else {
                            clearInterval(queue);
+                       }
+
+                       $("#fileOnServer-" + id).html(html);
+
                    }
+               });
 
-                   $("#fileOnServer-" + id).html(html);
-
-               }
-           });
-       }
+           }, 1000);
+       });
    }
 });
 
