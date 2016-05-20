@@ -1,0 +1,4 @@
+Konst\UploaderBundle\Entity\UserFile:
+    file:
+        mapping:           file_mapping
+        filename_property: savedName

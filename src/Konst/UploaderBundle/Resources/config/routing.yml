@@ -1,0 +1,6 @@
+konst_uploader_homepage:
+    path:     /uploader
+    defaults: { _controller: KonstUploaderBundle:Default:index }
+konst_uploader_upload:
+    path:     /uploader/upload
+    defaults: { _controller: KonstUploaderBundle:Default:upload }

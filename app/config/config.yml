@@ -17,7 +17,7 @@ framework:
         strict_requirements: ~
     form:            ~
     csrf_protection: ~
-    validation:      { enable_annotations: true }
+    validation:      { enabled: true, enable_annotations: true }
     #serializer:      { enable_annotations: true }
     templating:
         engines: ['twig']
@@ -32,8 +32,11 @@ framework:
 
 # Twig Configuration
 twig:
+    form:
+        resources: ['bootstrap_3_layout.html.twig']
     debug:            "%kernel.debug%"
     strict_variables: "%kernel.debug%"
+    cache:            false
 
 # Doctrine Configuration
 doctrine:
@@ -64,3 +67,56 @@ swiftmailer:
     username:  "%mailer_user%"
     password:  "%mailer_password%"
     spool:     { type: memory }
+
+vich_uploader:
+    db_driver: orm
+
+    mappings:
+        file_mapping:
+            uri_prefix:         /uploads
+            upload_destination: %kernel.root_dir%/../web/uploads
+            namer:              vich_uploader.namer_origname
+            inject_on_load:     true
+
+old_sound_rabbit_mq:
+    connections:
+        default:
+            host:     'localhost'
+            port:     5672
+            user:     'guest'
+            password: 'guest'
+            vhost:    '/'
+            lazy:     true
+            connection_timeout: 3
+            read_write_timeout: 3
+
+            # requires php-amqplib v2.4.1+ and PHP5.4+
+            keepalive: false
+
+            # requires php-amqplib v2.4.1+
+            heartbeat: 0
+    producers:
+        upload_file:
+            connection:       default
+            exchange_options: {name: 'upload-file', type: direct}
+    consumers:
+        upload_file:
+            connection:       default
+            exchange_options: {name: 'upload-file', type: direct}
+            queue_options:    {name: 'upload-file'}
+            callback:         upload_file_service
+
+
+
+konst_uploader:
+  parameters:
+    file_upload_rules:
+      - { format: "txt", max: "10000", stopwords: "stopwords1.txt" }
+      - { format: "txt", max: "999999", stopwords: "stopwords2.txt" }
+      - { format: "wav", max: "999999999" }
+      - { format: "avi" }
+    servers_list:
+#      - { type: "FTP", host: "demo.wftpserver.com", port: "21", access: "demo-user/demo-user", path: "/upload/" }
+      - { type: "SFTP", host: "demo.wftpserver.com", port: "2222", access: "demo-user/demo-user", path: "/upload/"}
+#      - { type: "FTP", host: "192.168.0.1", access: "user1/password1", path: "/datastore"}
+#      - { type: "SFTP", host: "192.168.0.10", access: "user2/password2", path: "/"}

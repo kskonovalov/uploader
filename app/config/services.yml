@@ -4,6 +4,8 @@ parameters:
 #    parameter_name: value
 
 services:
+     upload_file_service:
+        class: Konst\UploaderBundle\Consumer\UploadFileConsumer
 #    service_name:
 #        class: AppBundle\Directory\ClassName
 #        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]

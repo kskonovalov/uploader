@@ -1,0 +1,11 @@
+{% extends 'KonstUploaderBundle::base.html.twig' %}
+{% block body %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}

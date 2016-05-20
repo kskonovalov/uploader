@@ -1,0 +1,8 @@
+Konst\UploaderBundle\Entity\UserFile:
+    properties:
+        file:
+            - NotBlank: ~
+            - Konst\UploaderBundle\Validator\Constraints\CheckFileRequirements: ~
+#how can i transfer config vars into entitie?
+#    constraints:
+#        - Callback: [validate]

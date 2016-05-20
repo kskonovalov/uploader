@@ -1,0 +1,22 @@
+Konst\UploaderBundle\Entity\UserFile:
+    type: entity
+    table: null
+    repositoryClass: Konst\UploaderBundle\Repository\FileRepository
+    id:
+        id:
+            type: integer
+            id: true
+            generator:
+                strategy: AUTO
+    fields:
+        originalName:
+            type: string
+            length: 255
+        savedName:
+            type: string
+            length: 255
+        path:
+            type: text
+        updatedAt:
+            type: datetime
+    lifecycleCallbacks: {  }

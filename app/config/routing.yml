@@ -1,3 +1,10 @@
+konst_uploader:
+    resource: "@KonstUploaderBundle/Resources/config/routing.yml"
+    prefix:   /
+
 app:
     resource: "@AppBundle/Controller/"
     type:     annotation
+lucky_number:
+    path: /lucky/number/{count}
+    defaults: { _controller: AppBundle:Lucky:number }
