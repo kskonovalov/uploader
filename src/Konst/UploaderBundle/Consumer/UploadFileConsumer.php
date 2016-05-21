@@ -50,8 +50,6 @@ class UploadFileConsumer
             $this->em->persist($fileOnServer);
             $this->em->flush();
             
-            return false;
-            
         }
             
 

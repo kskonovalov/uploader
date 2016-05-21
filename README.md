@@ -9,6 +9,9 @@ uploader
 <b>to run rabbitmq (required for ftp uploading)</b>
 <p>$ ./app/console rabbitmq:consumer upload_file</p>
 
+<p><b>Front:</b></p>
+<p>/app_dev.php/uploader/upload</p>
+
 <b>to reset rabitmq:</b>
 
 <p>$ sudo rabbitmqctl stop_app</p>

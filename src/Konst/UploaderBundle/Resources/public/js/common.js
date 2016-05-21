@@ -7,11 +7,9 @@ $(document).ready(function() {
 
        $("#uploadStatus").find(".fileOnServer").each(function() {
            var id = $(this).data("id");
-           console.log(id);
            var queue = setInterval(function (){
-
                $.ajax({
-                   url: '/app_dev.php/uploader/status',
+                   url: 'status',
                    type: "POST",
                    data: {
                        fileId: id
