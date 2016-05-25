@@ -8,105 +8,45 @@ use Symfony\Component\HttpFoundation\Response;
 use Konst\UploaderBundle\Form\Type\UserFileType;
 use Konst\UploaderBundle\Entity\UserFile;
 use Konst\UploaderBundle\Entity\FilesOnServers;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Konst\UploaderBundle\Models\Upload;
 
 
 class DefaultController extends Controller
 {
+    /**
+     * @return Response
+     */
     public function indexAction()
     {
-
         return $this->render('KonstUploaderBundle:Default:index.html.twig');
-
     }
 
+    /**
+     * @param Request $request
+     * @return Response
+     */
     public function uploadAction(Request $request)
     {
-
         $messages = [];
         $filesOnServers = [];
+
         //create entity
         $file = new UserFile();
 
         $form = $this->createForm(UserFileType::class, $file);
-        
         $form->handleRequest($request);
 
         //standart validation
         if ($form->isValid()) {
 
-            //additional file validation
-            //TODO: logic must be in the model, i think
+            //get rules for file validation
             $fileUploadRules = $this->container->getParameter( 'konst_uploader_bundle.file_upload_rules' );
-            $fileValid = false;
-            foreach($fileUploadRules as $rule) {
-                //$rule["format"]
-                //$rule["max"]
-                //$rule["stopwords"]
 
-                //if all rules passes, file is valid
-                //check file extension first
-                if($rule["format"] == pathinfo($file->getOriginalName(), PATHINFO_EXTENSION)) {
-
-                    //checking "max" rule
-                    if(isset($rule["max"])) {
-                        if($rule["max"] >= $file->getFile()->getSize()) {
-                            $fileValid = true;
-                        }
-                        else {
-                            $fileValid = false;
-                            continue;
-                        }
-                    }
-                    else { //file format good, max size didn't set
-                        $fileValid = true;
-                    }
-
-                    //checking "stopwords" rule
-                    if(isset($rule["stopwords"])) {
-                        //$kernel =  $container->getService('kernel');
-                        $pathToStopWords = $this->get('kernel')->locateResource('@KonstUploaderBundle/Resources/config/stopwords/'.$rule["stopwords"]);
-                        $stopWordsFile = fopen($pathToStopWords, "r");
-                        if ($stopWordsFile) {
-                            //get stop words array
-                            $stopWordsArray = [];
-                            while (($line = fgets($stopWordsFile)) !== false) {
-                                // process the line read.
-                                $stopWordsArray[] = trim($line);
-                            }
-                            fclose($stopWordsFile);
-
-                            //check for forbidden lines
-                            $splFile = $file->getFile()->openFile();
-                            while (!$splFile->eof()) {
-                                $currentFileString = $splFile->fgets();
-                                foreach($stopWordsArray as $stopWord) {
-                                    if(stristr($currentFileString, $stopWord)) {
-                                        $fileValid = false;
-                                        $messages[] = "File upload cancelled because stop word \"{$stopWord}\" found";
-                                        //to break all checks, change to break 3;
-                                        break;
-                                    }
-                                }
-                            }
-                        } else {
-                            // error opening the file.
-                            $fileValid = false;
-                            $messages[] = "Can't open file with stop words";
-                        }
-                    }
-                    else { //file format good, max size didn't set
-                        $fileValid = true;
-                    }
-
-                }
-
-                //file passes tests for this rule group
-                if($fileValid)
-                    break;
-            }
-
-            if($fileValid) {
+            //file validation
+            $fileValidation = Upload::fileValidation($file, $fileUploadRules);
+            $fileIsValid = $fileValidation["fileValid"];
+            $messages = array_merge($messages, $fileValidation["messages"]);
+            if($fileIsValid) {
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($file);
                 $em->flush();
@@ -115,9 +55,7 @@ class DefaultController extends Controller
                 //sending upload task to ftp
                 $serversToUpload = $this->container->getParameter( 'konst_uploader_bundle.servers_list' );
 
-                
                 foreach($serversToUpload as $server) {
-
                     //insert file upload info
                     $fileOnServer = new FilesOnServers();
                     $fileOnServer->setFilename($file->getSavedName());
@@ -139,7 +77,6 @@ class DefaultController extends Controller
                     $filesOnServers[] = $fileIdOnServer;
                     
                     $this->get('old_sound_rabbit_mq.upload_file_producer')->publish(serialize($msg));
-
                 }
             }
             else {
@@ -156,25 +93,27 @@ class DefaultController extends Controller
             'filesOnServers' => $filesOnServers,
         ));
     }
-    
+
+    /**
+     * return json-encoded uploaded file status from DB
+     * @param Request $request
+     * @return Response
+     */
     public function showStatusAction (Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-        $fileStatus = $em->getRepository('KonstUploaderBundle:FilesOnServers')
-        ->find($this->get('request')->request->get('fileId'));
+        $em = $this->getDoctrine()->getRepository('KonstUploaderBundle:FilesOnServers')
+            ->find($request->get('fileId'));
 
         $result = [];
-
-        $result["server"] = $fileStatus->getServer();
-        $result["status"] = $fileStatus->getStatus();
+        $result["server"] = $em->getServer();
+        $result["status"] = $em->getStatus();
 
         $response = new Response();
         $response->setContent(json_encode($result));
         $response->setStatusCode(Response::HTTP_OK);
         $response->headers->set('Content-Type', 'application/json');
-// prints the HTTP headers followed by the content
-        return $response;
 
+        return $response;
     }
 
 }

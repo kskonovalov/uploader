@@ -28,6 +28,10 @@ class FilesOnServers
      */
     private $dateUpdated;
 
+    /**
+     * status list
+     * @var array
+     */
     private $statusArray = [
         "NEW_FILE" => 0,
         "UPLOADING" => 1,
@@ -36,12 +40,12 @@ class FilesOnServers
         "UPLOAD_ERROR" => 4,
         "OTHER_ERROR" => 5
     ];
+    
     /**
      * @var string
      */
     private $status;
-
-
+    
     /**
      * Get id
      *
