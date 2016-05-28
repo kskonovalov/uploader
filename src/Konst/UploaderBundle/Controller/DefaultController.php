@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Konst\UploaderBundle\Form\Type\UserFileType;
 use Konst\UploaderBundle\Entity\UserFile;
-use Konst\UploaderBundle\Entity\FilesOnServers;
 use Konst\UploaderBundle\Models\Upload;
 
 
@@ -27,8 +26,8 @@ class DefaultController extends Controller
      */
     public function uploadAction(Request $request)
     {
-        $messages = [];
-        $filesOnServers = [];
+        $notifications = [];
+        $filesIDsOnServers = [];
 
         //create entity
         $file = new UserFile();
@@ -38,50 +37,23 @@ class DefaultController extends Controller
 
         //standart validation
         if ($form->isValid()) {
-
             //get rules for file validation
-            $fileUploadRules = $this->container->getParameter( 'konst_uploader_bundle.file_upload_rules' );
+            $fileUploadRules = $this->container->getParameter('konst_uploader_bundle.file_upload_rules');
+            //get rules for ftp servers to upload on
+            $serversToUpload = $this->container->getParameter('konst_uploader_bundle.servers_list');
+            //get rabbitMQ file producer
+            $rabbitMqProducer = $this->get('old_sound_rabbit_mq.upload_file_producer');
+            //get entity manager
+            $em = $this->getDoctrine()->getManager();
 
-            //file validation
-            $fileValidation = Upload::fileValidation($file, $fileUploadRules);
-            $fileIsValid = $fileValidation["fileValid"];
-            $messages = array_merge($messages, $fileValidation["messages"]);
-            if($fileIsValid) {
-                $em = $this->getDoctrine()->getManager();
-                $em->persist($file);
-                $em->flush();
-                $messages[] = "File was uploaded successfully";
+            //process file
+            $fileResult = Upload::processFile($file, $em, $rabbitMqProducer, $fileUploadRules,
+                $serversToUpload);
 
-                //sending upload task to ftp
-                $serversToUpload = $this->container->getParameter( 'konst_uploader_bundle.servers_list' );
-
-                foreach($serversToUpload as $server) {
-                    //insert file upload info
-                    $fileOnServer = new FilesOnServers();
-                    $fileOnServer->setFilename($file->getSavedName());
-                    $fileOnServer->setServer(serialize($server));
-                    $fileOnServer->setStatus("NEW_FILE");
-                    $fileOnServer->setDateUpdated(new \DateTime('now'));
-                    $em->persist($fileOnServer);
-                    $em->flush();
-                    
-                    $fileIdOnServer = $fileOnServer->getId();
-
-                    //send to rabbitmq
-                    $msg = array(
-                        'savedName' => $file->getSavedName(), 
-                        'path' => $file->getFile()->getPath(), 
-                        'server' => $server,
-                        'fileOnServerId' => $fileIdOnServer);
-
-                    $filesOnServers[] = $fileIdOnServer;
-                    
-                    $this->get('old_sound_rabbit_mq.upload_file_producer')->publish(serialize($msg));
-                }
-            }
-            else {
-                $messages[] = "File didn't uploaded because of validation reasons";
-            }
+            //notifications for users if something worked wrong
+            $notifications = array_merge($notifications, $fileResult["notifications"]);
+            //id of a file on each server
+            $filesIDsOnServers = array_merge($filesIDsOnServers, $fileResult["filesIDsOnServers"]);
         }
         else {
             //some errors with form validation
@@ -89,8 +61,8 @@ class DefaultController extends Controller
 
         return $this->render('KonstUploaderBundle:Uploader:form.html.twig', array(
             'form' => $form->createView(),
-            'messages' => $messages,
-            'filesOnServers' => $filesOnServers,
+            'notifications' => $notifications,
+            'filesOnServers' => $filesIDsOnServers,
         ));
     }
 

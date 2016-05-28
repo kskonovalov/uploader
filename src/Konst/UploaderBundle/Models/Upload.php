@@ -9,9 +9,92 @@
 namespace Konst\UploaderBundle\Models;
 
 use Konst\UploaderBundle\Entity\UserFile;
+use Konst\UploaderBundle\Entity\FilesOnServers;
+use \Doctrine\ORM\EntityManager;
 
 class Upload
 {
+    /**
+     * function ask for file validation and if it passes adds it to upload queue
+     * @param UserFile                    $file
+     * @param \Doctrine\ORM\EntityManager $em
+     * @param                             $rabbitMqProducer
+     * @param                             $fileUploadRules
+     * @param                             $serversToUpload
+     * @return array
+     */
+    public static function processFile(UserFile $file, EntityManager $em, 
+        $rabbitMqProducer, $fileUploadRules, $serversToUpload)
+    {
+        $notifications = [];
+        $filesIDsOnServers = [];
+        
+        //file validation
+        $fileValidation = self::fileValidation($file, $fileUploadRules);
+        $fileIsValid = $fileValidation["fileValid"];
+        $notifications = array_merge($notifications, $fileValidation["notifications"]);
+
+        if($fileIsValid) {
+            $em->persist($file);
+            $em->flush();
+            $notifications[] = "File was uploaded successfully";
+
+            //sending upload task to ftp
+
+            foreach($serversToUpload as $server) {
+                $fileMessageToQueue = self::generateMessageToQueue($em, $file, $server);
+
+                //adding message to rabbitmq queue
+                $rabbitMqProducer->publish(serialize($fileMessageToQueue["messageToQueue"]));
+                
+                $filesIDsOnServers[] = $fileMessageToQueue["fileIdOnServer"];
+            }
+        }
+        else {
+            $notifications[] = "File didn't uploaded because of validation reasons";
+        }
+        return [
+            "fileIsValid" => $fileIsValid,
+            "filesIDsOnServers" => $filesIDsOnServers,
+            "notifications" => $notifications
+        ];
+    }
+
+    /**
+     * Function generates message to add in rabbitmq queue
+     * @param \Doctrine\ORM\EntityManager $em
+     * @param                             $file
+     * @param                             $server
+     * @return array
+     *  "messageToQueue" => ['savedName', 'path', 'server', 'fileOnServerId'],
+     *  "fileIdOnServer"
+     */
+    public static function generateMessageToQueue(EntityManager $em, $file, $server)
+    {
+        //insert file upload info
+        $fileOnServer = new FilesOnServers();
+        $fileOnServer->setFilename($file->getSavedName());
+        $fileOnServer->setServer(serialize($server));
+        $fileOnServer->setStatus("NEW_FILE");
+        $fileOnServer->setDateUpdated(new \DateTime('now'));
+        $em->persist($fileOnServer);
+        $em->flush();
+
+        $fileIdOnServer = $fileOnServer->getId();
+
+        //generate message to rabbitmq
+        $msg = array(
+            'savedName' => $file->getSavedName(),
+            'path' => $file->getFile()->getPath(),
+            'server' => $server,
+            'fileOnServerId' => $fileIdOnServer);
+
+        return [
+            "messageToQueue" => $msg,
+            "fileIdOnServer" => $fileIdOnServer
+        ];
+    }
+    
     /**
      * function validates file entity with rules
      * @param UserFile $file
@@ -21,7 +104,7 @@ class Upload
     public static function fileValidation(UserFile $file, $fileUploadRules)
     {
         $fileValid = false;
-        $messages = [];
+        $notifications = [];
 
         foreach($fileUploadRules as $rule) {
             //$rule["format"]
@@ -44,7 +127,7 @@ class Upload
                     $validateStopWords = self::validateStopWords($file, $rule["stopwords"]);
 
                     $fileValid = $validateStopWords["fileValid"];
-                    $messages = array_merge($messages, $validateStopWords["messages"]);
+                    $notifications = array_merge($notifications, $validateStopWords["notifications"]);
                 }
                 else { //file format good, max size didn't set
                     $fileValid = true;
@@ -56,7 +139,7 @@ class Upload
             }
 
         }
-        return Array("fileValid" => $fileValid, "messages" => $messages);
+        return Array("fileValid" => $fileValid, "notifications" => $notifications);
     }
 
     /**
@@ -82,15 +165,15 @@ class Upload
      */
     public static function validateSize(UserFile $file, $maxSize)
     {
-        $messages = [];
+        $notifications = [];
         if($maxSize >= $file->getFile()->getSize()) {
             $fileValid = true;
         }
         else {
             $fileValid = false;
-            $messages[] = "Problem with file size";
+            $notifications[] = "Problem with file size";
         }
-        return Array("fileValid" => $fileValid, "messages" => $messages);
+        return Array("fileValid" => $fileValid, "notifications" => $notifications);
     }
 
     /**
@@ -101,7 +184,7 @@ class Upload
     public static function validateStopWords(UserFile $file, $stopWordsFileName)
     {
         $fileValid = true;
-        $messages = [];
+        $notifications = [];
         $pathToStopWords = __DIR__ . "/../Resources/config/stopwords/" . $stopWordsFileName;
         $stopWordsFile = fopen($pathToStopWords, "r");
         if ($stopWordsFile) {
@@ -120,7 +203,7 @@ class Upload
                 foreach($stopWordsArray as $stopWord) {
                     if(stristr($currentFileString, $stopWord)) {
                         $fileValid = false;
-                        $messages[] = "File upload cancelled because stop word \"{$stopWord}\" found";
+                        $notifications[] = "File upload cancelled because stop word \"{$stopWord}\" found";
                         //to break all checks, change to "break 3";
                         break;
                     }
@@ -129,8 +212,8 @@ class Upload
         } else {
             // error opening the file.
             $fileValid = false;
-            $messages[] = "Can't open file with stop words";
+            $notifications[] = "Can't open file with stop words";
         }
-        return Array("fileValid" => $fileValid, "messages" => $messages);
+        return Array("fileValid" => $fileValid, "notifications" => $notifications);
     }
 }
