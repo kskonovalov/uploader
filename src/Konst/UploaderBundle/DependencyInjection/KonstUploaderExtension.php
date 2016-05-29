@@ -24,6 +24,7 @@ class KonstUploaderExtension extends Extension
 
         $container->setParameter( 'konst_uploader_bundle.file_upload_rules', $config[ 'parameters' ][ 'file_upload_rules' ]);
         $container->setParameter( 'konst_uploader_bundle.servers_list', $config[ 'parameters' ][ 'servers_list' ]);
+        $container->setParameter( 'konst_uploader_bundle.upload_path', $config[ 'parameters' ][ 'upload_path' ]);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');

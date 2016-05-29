@@ -4,10 +4,7 @@ namespace Konst\UploaderBundle\Entity;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-
-error_reporting(E_ALL ^E_NOTICE ^E_DEPRECATED );
-ini_set('display_errors',1);
-error_reporting(E_ALL);
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * File
@@ -46,6 +43,15 @@ class UserFile
      */
     private $path;
 
+    /**
+     * UserFile constructor.
+     *
+     * @param string $path
+     */
+    public function __construct($path)
+    {
+        $this->path = $path;
+    }
 
     /**
      * Get id
@@ -80,13 +86,10 @@ class UserFile
              * почему setFile вызывается два раза, один раз для $file как instanceof UploadedFile
              * и второй для $file как instanceof File?
              */
-            if($file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) 
+            if($file instanceof UploadedFile)
             {
                 $originalName = $file->getClientOriginalName();
                 $this->setOriginalName($originalName);
-                //TODO: и как получить папку из конфига?
-                $path = "uploads";
-                $this->setPath($path);
             }
             
         }
@@ -94,31 +97,12 @@ class UserFile
         return $this;
     }
 
-
     /**
      * @param ExecutionContextInterface $context
      */
     public function validate(ExecutionContextInterface $context)
     {
-        //TODO: here validation rules must looking good
-        //but i don't know how to access config.yml file_upload_rules variable from here =(
-        
-       // $recipient = $this->container->getParameter( 'konst_uploader_bundle.file_upload_rules' );
-        /*
-        if (! in_array($this->file->getMimeType(), array(
-            'image/jpeg',
-            'image/gif',
-            'image/png',
-            'video/mp4',
-            'video/quicktime',
-            'video/avi',
-        ))) {
-            $context
-                ->buildViolation('Wrong file type (jpg,gif,png,mp4,mov,avi)')
-                ->atPath('fileName')
-                ->addViolation()
-            ;
-        }*/
+        //maybe here validation rules should be..
     }
 
     /**

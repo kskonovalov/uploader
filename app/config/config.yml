@@ -114,6 +114,7 @@ assetic:
 
 konst_uploader:
   parameters:
+    upload_path: "uploads"
     file_upload_rules:
       - { format: "txt", max: "10000", stopwords: "stopwords1.txt" }
       - { format: "txt", max: "999999", stopwords: "stopwords2.txt" }

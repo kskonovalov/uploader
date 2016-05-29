@@ -30,7 +30,9 @@ class DefaultController extends Controller
         $filesIDsOnServers = [];
 
         //create entity
-        $file = new UserFile();
+        //get path
+        $uploadPath = $this->container->getParameter('konst_uploader_bundle.upload_path');
+        $file = new UserFile($uploadPath);
 
         $form = $this->createForm(UserFileType::class, $file);
         $form->handleRequest($request);
