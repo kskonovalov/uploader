@@ -12,6 +12,11 @@ use Konst\UploaderBundle\Entity\UserFile;
 use Konst\UploaderBundle\Entity\FilesOnServers;
 use \Doctrine\ORM\EntityManager;
 
+/**
+ * Class Upload
+ *
+ * @package Konst\UploaderBundle\Models
+ */
 class Upload
 {
     /**

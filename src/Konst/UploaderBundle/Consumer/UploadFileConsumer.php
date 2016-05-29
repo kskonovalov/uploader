@@ -6,6 +6,11 @@ use PhpAmqpLib\Message\AMQPMessage;
 use \Doctrine\ORM\EntityManager;
 use Konst\UploaderBundle\Models\UploadConsumer;
 
+/**
+ * Class UploadFileConsumer
+ *
+ * @package Konst\UploaderBundle\Consumer
+ */
 class UploadFileConsumer
 {
     /**

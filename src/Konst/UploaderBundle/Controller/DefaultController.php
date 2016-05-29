@@ -9,7 +9,11 @@ use Konst\UploaderBundle\Form\Type\UserFileType;
 use Konst\UploaderBundle\Entity\UserFile;
 use Konst\UploaderBundle\Models\Upload;
 
-
+/**
+ * Class DefaultController
+ *
+ * @package Konst\UploaderBundle\Controller
+ */
 class DefaultController extends Controller
 {
     /**

@@ -8,6 +8,11 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Class UserFileType
+ *
+ * @package Konst\UploaderBundle\Form\Type
+ */
 class UserFileType extends AbstractType
 {
     /**

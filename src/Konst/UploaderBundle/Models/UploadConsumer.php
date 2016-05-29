@@ -14,6 +14,11 @@ use League\Flysystem\Adapter\Ftp as FtpAdapter;
 use \Doctrine\ORM\EntityManager;
 use Konst\UploaderBundle\Entity\FilesOnServers;
 
+/**
+ * Class UploadConsumer
+ *
+ * @package Konst\UploaderBundle\Models
+ */
 class UploadConsumer
 {
     /**
