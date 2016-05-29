@@ -12,6 +12,7 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Sftp\SftpAdapter;
 use League\Flysystem\Adapter\Ftp as FtpAdapter;
 use \Doctrine\ORM\EntityManager;
+use Konst\UploaderBundle\Entity\FilesOnServers;
 
 class UploadConsumer
 {
@@ -21,7 +22,7 @@ class UploadConsumer
      * @param EntityManager $em
      * @return bool
      */
-    public static function fileUpload($msgBody, $fileOnServer, EntityManager $em)
+    public static function fileUpload($msgBody, FilesOnServers $fileOnServer, EntityManager $em)
     {
         $server = $msgBody["server"];
         $server["access"] = explode("/", $server["access"]);

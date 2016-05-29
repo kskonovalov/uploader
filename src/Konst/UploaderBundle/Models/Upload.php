@@ -62,14 +62,12 @@ class Upload
 
     /**
      * Function generates message to add in rabbitmq queue
-     * @param \Doctrine\ORM\EntityManager $em
-     * @param                             $file
-     * @param                             $server
+     * @param EntityManager $em
+     * @param UserFile      $file
+     * @param               $server
      * @return array
-     *  "messageToQueue" => ['savedName', 'path', 'server', 'fileOnServerId'],
-     *  "fileIdOnServer"
      */
-    public static function generateMessageToQueue(EntityManager $em, $file, $server)
+    public static function generateMessageToQueue(EntityManager $em, UserFile $file, $server)
     {
         //insert file upload info
         $fileOnServer = new FilesOnServers();
