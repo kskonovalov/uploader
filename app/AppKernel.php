@@ -18,9 +18,9 @@ class AppKernel extends Kernel
             new AppBundle\AppBundle(),
             new Vich\UploaderBundle\VichUploaderBundle(),
             new Konst\UploaderBundle\KonstUploaderBundle(),
-            new OldSound\RabbitMqBundle\OldSoundRabbitMqBundle(),
             new Oneup\FlysystemBundle\OneupFlysystemBundle(),
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
+            new OldSound\RabbitMqBundle\OldSoundRabbitMqBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'), true)) {
