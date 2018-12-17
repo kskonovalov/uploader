@@ -1,7 +1,7 @@
 uploader
 ========
 
-<p>A Symfony project created on May 11, 2016, 5:05 pm.</p>
+<p>An Uploader project based on Symfony, created on May 11, 2016, 5:05 pm.</p>
 
 <b>to create tables in db:</b>
 <p>$ php app/console doctrine:schema:update --force</p>
